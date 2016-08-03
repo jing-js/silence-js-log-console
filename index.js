@@ -67,7 +67,11 @@ class ConsoleLogger {
     if (args.length === 0) {
       return;
     }
-    consoleFnMap[level].call(console, this._format(level, ...args));
+    if (typeof args[0] !== 'string') {
+      consoleFnMap[level].call(console, `[${formatDate()}] [${TIPS[level]}]`, ...args); 
+    } else {
+      consoleFnMap[level].call(console, this._format(level, ...args));      
+    }
   }
 }
 
