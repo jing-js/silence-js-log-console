@@ -9,7 +9,7 @@ const LEVELS = {
   INFO: 1,
   DEBUG: 0
 };
-const TIPS = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
+const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[NONE ]'];
 
 function formatDate(date) {
   function fn(n) {
@@ -45,7 +45,7 @@ class ConsoleLogger {
     this._write(level, ...args);
   }
   _format(level, ...args) {
-    let prefix = `[${formatDate()}] [${TIPS[level]}] `;
+    let prefix = `[${formatDate()}] ${TIPS[level]} `;
     return prefix + format(...args);
   }
   log(...args) {
@@ -72,6 +72,9 @@ class ConsoleLogger {
     } else {
       consoleFnMap[level].call(console, this._format(level, ...args));      
     }
+  }
+  access(method, code, duration, ip, url) {
+    console.log(`[${formatDate()}] [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${duration}ms] [${ip}] ${url}\n`);
   }
 }
 
