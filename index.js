@@ -88,8 +88,9 @@ class ConsoleLogger {
       consoleFnMap[level].call(console, this._format(level, ...args));      
     }
   }
-  access(method, code, duration, ip, url) {
-    console.log((cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${formatDate()}] [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${duration}ms] [${ip}] ${url}\n`);
+  access(method, code, duration, bytesRead, bytesWritten, user, ip, url) {
+    let ds = duration < 2000 ? duration + 'ms' : (duration / 1000 | 0) + 's';
+    console.log((cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${formatDate()}] [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${ip}] ${url}`);
   }
 }
 
