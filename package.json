@@ -1,6 +1,6 @@
 {
   "name": "silence-js-log-console",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "console logger for silence-js",
   "main": "index.js",
   "scripts": {
@@ -17,5 +17,6 @@
   },
   "homepage": "https://github.com/jing-js/silence-js-log-console#readme",
   "dependencies": {
+    "silence-js-util": "^1.0.0"
   }
 }
