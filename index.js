@@ -22,7 +22,10 @@ const consoleFnMap = {
 }
 class ConsoleLogger {
   constructor(config) {
-    this.level = LEVELS[(config.level || 'ERROR').toUpperCase()];
+    this._level = LEVELS[(config.level || 'ERROR').toUpperCase()];
+  }
+  get level() {
+    return LEVEL_NAMES[this._level];
   }
   init() {
     return Promise.resolve();
@@ -31,7 +34,7 @@ class ConsoleLogger {
     return Promise.resolve();
   }
   _log(level, section, ...args) {
-    if (level < this.level) {
+    if (level < this._level) {
       return;
     }
     this._write(level, section.toUpperCase(), ...args);
@@ -75,7 +78,7 @@ class ConsoleLogger {
     }
   }
   access(method, code, duration, bytesRead, bytesWritten, user, ip, userAgent, url) {
-    if (this.level === LEVELS.NONE) {
+    if (this._level === LEVELS.NONE) {
       return;
     }
     let ds = duration < 2000 ? duration + 'ms' : (duration / 1000 | 0) + 's';
