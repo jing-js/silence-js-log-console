@@ -77,7 +77,7 @@ class ConsoleLogger {
       consoleFnMap[level].call(console, this._format(level, section, ...args));      
     }
   }
-  access(method, code, duration, bytesRead, bytesWritten, user, ip, userAgent, url) {
+  access(method, code, duration, bytesRead, bytesWritten, user, clientIp, remoteIp, userAgent, url) {
     if (this._level === LEVELS.NONE) {
       return;
     }
@@ -85,7 +85,7 @@ class ConsoleLogger {
     if (userAgent && userAgent.indexOf('"') >= 0) {
       userAgent = userAgent.replace(/\"/g, '\\"')
     }
-    console.log((cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${util.formatDate()}] ${TIPS[LEVELS.ACCESS]} [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${ip}] "${userAgent || ''}" ${url}`);
+    console.log((cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${util.formatDate()}] ${TIPS[LEVELS.ACCESS]} [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${clientIp || '-'}] [${remoteIp || '-'}] "${userAgent || '-'}" ${url}`);
   }
 }
 
