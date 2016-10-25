@@ -13,6 +13,7 @@ const LEVELS = {
   DEBUG: 0
 };
 const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[ACCES]'];
+const LEVEL_NAMES = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'ACCESS', 'NONE'];
 
 const consoleFnMap = {
   [LEVELS.INFO]: console.log,
