@@ -3,7 +3,6 @@
 const format = require('util').format;
 const util = require('silence-js-util');
 const cluster = require('cluster');
-
 const LEVELS = {
   NONE: 5,
   ACCESS: 4,
@@ -24,6 +23,7 @@ const consoleFnMap = {
 class ConsoleLogger {
   constructor(config) {
     this._level = LEVELS[(config.level || 'ERROR').toUpperCase()];
+    this._cluster = config.cluster ? `[${config.cluster.toUpperCase()}] ` : '';
   }
   get level() {
     return LEVEL_NAMES[this._level];
@@ -41,7 +41,7 @@ class ConsoleLogger {
     this._write(level, section.toUpperCase(), ...args);
   }
   _format(level, section, ...args) {
-    let prefix = (cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${util.formatDate()}] ${TIPS[level]} [${section}] `;
+    let prefix = this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `;
     return prefix + format(...args);
   }
   debug(...args) {
@@ -73,7 +73,7 @@ class ConsoleLogger {
       return;
     }
     if (typeof args[0] !== 'string') {
-      consoleFnMap[level].call(console, (cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${util.formatDate()}] ${TIPS[level]} [${section}] `, ...args);
+      consoleFnMap[level].call(console, this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `, ...args);
     } else {
       consoleFnMap[level].call(console, this._format(level, section, ...args));      
     }
@@ -86,7 +86,7 @@ class ConsoleLogger {
     if (userAgent && userAgent.indexOf('"') >= 0) {
       userAgent = userAgent.replace(/\"/g, '\\"')
     }
-    console.log((cluster.isWorker ? `[${cluster.worker.id}] ` : '') + `[${util.formatDate()}] ${TIPS[LEVELS.ACCESS]} [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${clientIp || '-'}] [${remoteIp || '-'}] "${userAgent || '-'}" ${url}`);
+    console.log(this._cluster + `[${util.formatDate()}] ${TIPS[LEVELS.ACCESS]} [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${clientIp || '-'}] [${remoteIp || '-'}] "${userAgent || '-'}" ${url}`);
   }
 }
 
