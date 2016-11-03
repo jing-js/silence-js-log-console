@@ -2,7 +2,6 @@
 
 const format = require('util').format;
 const util = require('silence-js-util');
-const cluster = require('cluster');
 const LEVELS = {
   NONE: 5,
   ACCESS: 4,
@@ -23,60 +22,65 @@ const consoleFnMap = {
 class ConsoleLogger {
   constructor(config) {
     this._level = LEVELS[(config.level || 'ERROR').toUpperCase()];
-    this._cluster = config.cluster ? `[${config.cluster.toUpperCase()}] ` : '';
+    this._cluster = config.cluster > -2 ? `[${config.cluster === -1 ? 'MASTER' : 'W_' + config.cluster}] ` : '';
   }
   get level() {
     return LEVEL_NAMES[this._level];
   }
+
+  get isReady() {
+    return true;
+  }
+
+  get isClosed() {
+    return false;
+  }
+
   init() {
     return Promise.resolve();
   }
   close() {
     return Promise.resolve();
   }
-  _log(level, section, ...args) {
+  _log(level, section, args) {
     if (level < this._level) {
       return;
     }
-    this._write(level, section.toUpperCase(), ...args);
+    this._write(level, section.toUpperCase(), args);
   }
-  _format(level, section, ...args) {
+  _format(level, section, args) {
     let prefix = this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `;
-    return prefix + format(...args);
+    return prefix + format.apply(null, args);
   }
   debug(...args) {
-    this._log(LEVELS.DEBUG, 'all', ...args);
+    this._log(LEVELS.DEBUG, 'all', args);
   }
   error(...args) {
-    this._log(LEVELS.ERROR, 'all', ...args);
+    this._log(LEVELS.ERROR, 'all', args);
   }
   info(...args) {
-    this._log(LEVELS.INFO, 'all', ...args);
+    this._log(LEVELS.INFO, 'all', args);
   }
   warn(...args) {
-    this._log(LEVELS.WARN, 'all', ...args);
+    this._log(LEVELS.WARN, 'all', args);
   }
   sdebug(section, ...args) {
-    this._log(LEVELS.DEBUG, section, ...args)
+    this._log(LEVELS.DEBUG, section, args)
   }
   sinfo(section, ...args) {
-    this._log(LEVELS.INFO, section, ...args)
+    this._log(LEVELS.INFO, section, args)
   }
   serror(section, ...args) {
-    this._log(LEVELS.ERROR, section, ...args)
+    this._log(LEVELS.ERROR, section, args)
   }
   swarn(section, ...args) {
-    this._log(LEVELS.WARN, section, ...args)
+    this._log(LEVELS.WARN, section, args)
   }
-  _write(level, section, ...args) {
+  _write(level, section, args) {
     if (args.length === 0) {
       return;
     }
-    if (typeof args[0] !== 'string') {
-      consoleFnMap[level].call(console, this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `, ...args);
-    } else {
-      consoleFnMap[level].call(console, this._format(level, section, ...args));      
-    }
+    consoleFnMap[level].call(console, this._format(level, section, args));
   }
   access(method, code, duration, bytesRead, bytesWritten, user, clientIp, remoteIp, userAgent, url) {
     if (this._level === LEVELS.NONE) {
