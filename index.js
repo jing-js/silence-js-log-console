@@ -42,41 +42,70 @@ class ConsoleLogger {
   close() {
     return Promise.resolve();
   }
-  _log(level, section, args) {
-    if (level < this._level) {
-      return;
-    }
-    this._write(level, section.toUpperCase(), args);
-  }
   _format(level, section, args) {
     let prefix = this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `;
-    return prefix + format.apply(null, args);
+    return prefix + format(...args);
   }
   debug(...args) {
-    this._log(LEVELS.DEBUG, 'all', args);
+    if (LEVELS.DEBUG < this._level) {
+      return;
+    }
+    this._write(LEVELS.DEBUG, args);
   }
   error(...args) {
-    this._log(LEVELS.ERROR, 'all', args);
+    if (LEVELS.ERROR < this._level) {
+      return;
+    }
+    if (args.length === 1 && typeof args[0] === 'string') {
+      this._write(LEVELS.ERROR, [new Error(args[0])]);
+    } else {
+      this._write(LEVELS.ERROR, args);
+    }
   }
   info(...args) {
-    this._log(LEVELS.INFO, 'all', args);
+    if (LEVELS.INFO < this._level) {
+      return;
+    }
+    this._write(LEVELS.INFO, args);
   }
   warn(...args) {
-    this._log(LEVELS.WARN, 'all', args);
+    if (LEVELS.WARN < this._level) {
+      return;
+    }
+    this._write(LEVELS.WARN, args);
   }
   sdebug(section, ...args) {
-    this._log(LEVELS.DEBUG, section, args)
+    if (LEVELS.DEBUG < this._level) {
+      return;
+    }
+    this._swrite(LEVELS.DEBUG, section, args)
   }
   sinfo(section, ...args) {
-    this._log(LEVELS.INFO, section, args)
+    if (LEVELS.INFO < this._level) {
+      return;
+    }
+    this._swrite(LEVELS.INFO, section, args)
   }
   serror(section, ...args) {
-    this._log(LEVELS.ERROR, section, args)
+    if (LEVELS.ERROR < this._level) {
+      return;
+    }
+    if (args.length === 1 && typeof args[0] === 'string') {
+      this._swrite(LEVELS.ERROR, section, [new Error(args[0])]);
+    } else {
+      this._swrite(LEVELS.ERROR, section, args);
+    }
   }
   swarn(section, ...args) {
-    this._log(LEVELS.WARN, section, args)
+    if (LEVELS.WARN < this._level) {
+      return;
+    }
+    this._swrite(LEVELS.WARN, section, args)
   }
-  _write(level, section, args) {
+  _write(level, args) {
+    this._swrite(level, 'all', args);
+  }
+  _swrite(level, section, args) {
     if (args.length === 0) {
       return;
     }
