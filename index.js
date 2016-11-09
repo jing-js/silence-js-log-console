@@ -13,12 +13,6 @@ const LEVELS = {
 const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[ACCES]'];
 const LEVEL_NAMES = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'ACCESS', 'NONE'];
 
-const consoleFnMap = {
-  [LEVELS.INFO]: console.log,
-  [LEVELS.WARN]: console.warn,
-  [LEVELS.ERROR]: console.error,
-  [LEVELS.DEBUG]: console.log
-}
 class ConsoleLogger {
   constructor(config) {
     this._level = LEVELS[(config.level || 'ERROR').toUpperCase()];
@@ -42,8 +36,8 @@ class ConsoleLogger {
   close() {
     return Promise.resolve();
   }
-  _format(level, section, args) {
-    let prefix = this._cluster + `[${util.formatDate()}] ${TIPS[level]} [${section}] `;
+  _format(level, section, args, ts) {
+    let prefix = this._cluster + `[${util.formatDate(ts ? new Date(ts) : undefined)}] ${TIPS[level]} [${section}] `;
     return prefix + format(...args);
   }
   debug(...args) {
@@ -102,14 +96,14 @@ class ConsoleLogger {
     }
     this._swrite(LEVELS.WARN, section, args)
   }
-  _write(level, args) {
-    this._swrite(level, 'all', args);
+  _write(level, args, ts) {
+    this._swrite(level, 'all', args, ts);
   }
-  _swrite(level, section, args) {
+  _swrite(level, section, args, ts) {
     if (args.length === 0) {
       return;
     }
-    consoleFnMap[level].call(console, this._format(level, section, args));
+    console.log(this._format(level, section, args, ts));
   }
   access(method, code, duration, bytesRead, bytesWritten, user, clientIp, remoteIp, userAgent, url) {
     if (this._level === LEVELS.NONE) {
