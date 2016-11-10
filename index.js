@@ -1,6 +1,5 @@
 'use strict';
 
-const format = require('util').format;
 const util = require('silence-js-util');
 const LEVELS = {
   NONE: 5,
@@ -12,6 +11,7 @@ const LEVELS = {
 };
 const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[ACCES]'];
 const LEVEL_NAMES = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'ACCESS', 'NONE'];
+
 
 class ConsoleLogger {
   constructor(config) {
@@ -38,7 +38,7 @@ class ConsoleLogger {
   }
   _format(level, section, args, ts) {
     let prefix = this._cluster + `[${util.formatDate(ts ? new Date(ts) : undefined)}] ${TIPS[level]} [${section}] `;
-    return prefix + format(...args);
+    return prefix + (level === LEVELS.ERROR ? util.formatError(args) : util.formatArray(args));
   }
   debug(...args) {
     if (LEVELS.DEBUG < this._level) {
@@ -46,15 +46,11 @@ class ConsoleLogger {
     }
     this._write(LEVELS.DEBUG, args);
   }
-  error(...args) {
+  error(err) {
     if (LEVELS.ERROR < this._level) {
       return;
     }
-    if (args.length === 1 && typeof args[0] === 'string') {
-      this._write(LEVELS.ERROR, [new Error(args[0])]);
-    } else {
-      this._write(LEVELS.ERROR, args);
-    }
+    this._write(LEVELS.ERROR, err);
   }
   info(...args) {
     if (LEVELS.INFO < this._level) {
@@ -80,15 +76,11 @@ class ConsoleLogger {
     }
     this._swrite(LEVELS.INFO, section, args)
   }
-  serror(section, ...args) {
+  serror(section, err) {
     if (LEVELS.ERROR < this._level) {
       return;
     }
-    if (args.length === 1 && typeof args[0] === 'string') {
-      this._swrite(LEVELS.ERROR, section, [new Error(args[0])]);
-    } else {
-      this._swrite(LEVELS.ERROR, section, args);
-    }
+    this._swrite(LEVELS.ERROR, section, err);
   }
   swarn(section, ...args) {
     if (LEVELS.WARN < this._level) {
@@ -100,9 +92,6 @@ class ConsoleLogger {
     this._swrite(level, 'all', args, ts);
   }
   _swrite(level, section, args, ts) {
-    if (args.length === 0) {
-      return;
-    }
     console.log(this._format(level, section, args, ts));
   }
   access(method, code, duration, bytesRead, bytesWritten, user, clientIp, remoteIp, userAgent, url) {
