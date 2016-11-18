@@ -17,6 +17,9 @@ class ConsoleLogger {
   constructor(config) {
     this._level = LEVELS[(config.level || 'ERROR').toUpperCase()];
     this._cluster = config.cluster > -2 ? `[${config.cluster === -1 ? 'MASTER' : 'W_' + config.cluster}] ` : '';
+    this._stat = config.stat !== false;
+    this._counts = LEVEL_NAMES.map(n => 0);
+    this._scounts = LEVEL_NAMES.map(n => new Map());
   }
   get level() {
     return LEVEL_NAMES[this._level];
@@ -28,6 +31,23 @@ class ConsoleLogger {
 
   get isClosed() {
     return false;
+  }
+
+  __collectStatus() {
+    return {
+      type: 'console',
+      counts: this._counts,
+      scounts: this._scounts.map(m => {
+        let it = m.entries();
+        let n = it.next();
+        let s = {};
+        while(!n.done && n.value && n.value.length === 2) {
+          s[n.value[0]] = n.value[1];
+          n = it.next();
+        }
+        return s;
+      })
+    };
   }
 
   init() {
@@ -89,9 +109,18 @@ class ConsoleLogger {
     this._swrite(LEVELS.WARN, section, args)
   }
   _write(level, args, ts) {
-    this._swrite(level, 'all', args, ts);
+    this._stat && this._counts[level]++;
+    console.log(this._format(level, 'all', args, ts));
   }
   _swrite(level, section, args, ts) {
+    if (this._stat) {
+      let mp = this._scounts[level];
+      if (mp.has(section)) {
+        mp.set(section, mp.get(section) + 1);
+      } else {
+        mp.set(section, 1);
+      }
+    }
     console.log(this._format(level, section, args, ts));
   }
   access(method, code, duration, bytesRead, bytesWritten, user, clientIp, remoteIp, userAgent, url) {
@@ -102,6 +131,7 @@ class ConsoleLogger {
     if (userAgent && userAgent.indexOf('"') >= 0) {
       userAgent = userAgent.replace(/\"/g, '\\"')
     }
+    this._stat && this._counts[LEVELS.ACCESS]++;
     console.log(this._cluster + `[${util.formatDate()}] ${TIPS[LEVELS.ACCESS]} [${code !== 0 && code < 1000 ? code : 200}] [${method}] [${ds}] [${bytesRead}] [${bytesWritten}] [${user ? user : '-'}] [${clientIp || '-'}] [${remoteIp || '-'}] "${userAgent || '-'}" ${url}`);
   }
 }
