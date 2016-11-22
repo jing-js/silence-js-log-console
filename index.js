@@ -2,15 +2,16 @@
 
 const util = require('silence-js-util');
 const LEVELS = {
-  NONE: 5,
+  NONE: 6,
+  ACTION: 5,
   ACCESS: 4,
   ERROR: 3,
   WARN: 2,
   INFO: 1,
   DEBUG: 0
 };
-const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[ACCES]'];
-const LEVEL_NAMES = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'ACCESS', 'NONE'];
+const TIPS = ['[DEBUG]', '[INFO ]', '[WARN ]', '[ERROR]', '[ACCES]', '[ACT  ]'];
+const LEVEL_NAMES = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'ACCESS', 'ACTION', 'NONE'];
 
 
 class ConsoleLogger {
@@ -83,6 +84,14 @@ class ConsoleLogger {
       return;
     }
     this._write(LEVELS.WARN, args);
+  }
+  action(userId, act, params) {
+    if (LEVELS.ACTION < this._level || !userId) {
+      return;
+    }
+    this._stat && this._counts[LEVELS.ACTION]++;
+    let msg = `[${util.formatDate()}] ${TIPS[LEVELS.ACTION]} [${userId}] [${act}] ` + (params ? JSON.stringify(params) : '');
+    console.log(msg);
   }
   sdebug(section, ...args) {
     if (LEVELS.DEBUG < this._level) {
